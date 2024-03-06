@@ -1,0 +1,120 @@
+---
+title: "Figure3_MMBR"
+output: html_document
+date: "2024-03-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(pheatmap)
+library(RColorBrewer)
+#library(d3heatmap)
+library(iheatmapr)
+library(ape)
+library(phytools)
+#library(ggtree)
+
+
+```
+
+```{r}
+### original data from ../../data/processed/depreciated/Orthofinder/Full_run2/Results_Sep09/COUNT/
+### CB paper 2021
+
+bin <- read.table("../data/raw/Gene_families_binary.tsv", header = T)
+bin$PcanCKAlt <- NULL
+matbin <- bin[,2:24]
+#rownames(mat) <- ecdat.comp$EC
+rownames(matbin) <- bin$Family
+col = c("white", "black")
+pdf("../data/processed/Gene_families_binary.pdf")
+pheatmap(matbin, 
+         color = col, 
+         #color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu"))),
+         drop_levels=TRUE, 
+         fontsize = 5, 
+         show_rownames = FALSE,
+         main = "gene families binary profiles")
+dev.off()
+
+
+# manually getting the clusters
+# https://stackoverflow.com/questions/27820158/pheatmap-in-r-how-to-get-clusters
+pdf("../data/processed/big_hm_temp.pdf", height = 800, width = 24)
+test1 <- pheatmap(matbin, 
+                  color = col,
+                  drop_levels=TRUE, 
+                  fontsize = 12)
+dev.off()
+```
+### GO ENRICHHMENT 
+### DATA GATHERING AND PROCESSING SEE FIG3.SMK 
+
+```{r}
+library(dcGOR)
+```
+
+```{r}
+# read the domains for each cluster
+# Read promiscuous Pfam domains
+
+clstA <- read.table("../data/processed/cluster-A_domains.txt")
+clstB <- read.table("../data/processed/cluster-B_domains.txt")
+clstC <- read.table("../data/processed/cluster-C_domains.txt")
+clstD <- read.table("../data/processed/cluster-D_domains.txt")
+clstE <- read.table("../data/processed/cluster-E_domains.txt")
+clstF <- read.table("../data/processed/cluster-F_domains.txt")
+
+#---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
+# Enrichment analysis for Pfam domains
+#---------------------------------------------------------------------------
+#---------------------------------------------------------------------------
+
+## define the input data
+#data <- as.character(domains$Pfam)
+clstAdom <- as.character(clstA$V1)
+clstBdom <- as.character(clstB$V1)
+clstCdom <- as.character(clstC$V1)
+clstDdom <- as.character(clstD$V1)
+clstEdom <- as.character(clstE$V1)
+clstFdom <- as.character(clstF$V1)
+
+### load Pfam domain informtion (as 'InfoDataFrame' object)
+Pfam <- dcRDataLoader('Pfam')
+
+## 1) GOBP enrichment analysis, producing an object of S4 class 'Eoutput'
+### By default, using all annotatable domains as the background
+clstAput <- dcEnrichment(clstAdom, domain="Pfam", ontology="GOBP")
+clstBput <- dcEnrichment(clstBdom, domain="Pfam", ontology="GOBP")
+clstCput <- dcEnrichment(clstCdom, domain="Pfam", ontology="GOBP")
+clstDput <- dcEnrichment(clstDdom, domain="Pfam", ontology="GOBP")
+clstEput <- dcEnrichment(clstEdom, domain="Pfam", ontology="GOBP")
+clstFput <- dcEnrichment(clstFdom, domain="Pfam", ontology="GOBP")
+
+### write into a local files 
+write(clstAput, file='../data/processed/cluster-A_domains_GOBP_enrichments.txt')
+write(clstBput, file='../data/processed/cluster-B_domains_GOBP_enrichments.txt')
+write(clstCput, file='../data/processed/cluster-C_domains_GOBP_enrichments.txt')
+write(clstDput, file='../data/processed/cluster-D_domains_GOBP_enrichments.txt')
+write(clstEput, file='../data/processed/cluster-E_domains_GOBP_enrichments.txt')
+write(clstFput, file='../data/processed/cluster-F_domains_GOBP_enrichments.txt')
+
+### view the top 5 significant terms
+view(clstAput, top_num=5, sortBy="pvalue", details=TRUE)
+view(clstBput, top_num=5, sortBy="pvalue", details=TRUE)
+view(clstCput, top_num=5, sortBy="pvalue", details=TRUE)
+view(clstDput, top_num=5, sortBy="pvalue", details=TRUE)
+view(clstEput, top_num=5, sortBy="pvalue", details=TRUE)
+view(clstFput, top_num=5, sortBy="pvalue", details=TRUE)
+
+````
