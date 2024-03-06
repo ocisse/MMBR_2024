@@ -60,7 +60,7 @@ rule get_seq:
             shell("seqtk subseq {output.db} {input.clustE} > {output.e}")
             shell("seqtk subseq {output.db} {input.clustF} > {output.f}")
 
-# -Z represent the number of seqeunces
+# -Z represent the number of sequences
 # grep -c '^ACC'  ~/DATA/DB/PFAM/current_release/Pfam-A.hmm 16712
 
 rule pfam:
@@ -91,9 +91,6 @@ rule pfam:
         shell("hmmsearch -E {params.e} -Z {params.z} --cpu {threads} --noali --tblout {output.e} {input.db} {input.clustE}")
         shell("hmmsearch -E {params.e} -Z {params.z} --cpu {threads} --noali --tblout {output.f} {input.db} {input.clustF}")
             
-# don't forget to exclude isoforms (e.g. nirr etc)   
-# might be not necessary for dcGOR, because it does not use multiple counts of the same domain
-# first try and see
 rule post_process_pfam:
     input:
         clustA=rules.pfam.output.a,
